@@ -2,6 +2,7 @@ import assert from 'assert';
 import pttbot from '../src';
 import key from '../src/utils/keyboard';
 import { username, password } from './config';
+global.WebSocket = require('ws');
 
 const newbot = async () => {
   const ptt = new pttbot();
@@ -17,6 +18,30 @@ const newbot = async () => {
 
 describe('Articles', () => {
   let ptt;
+
+  describe('getSearchArticles', () => {
+    before('login', async () => {
+      ptt = await newbot();
+    });
+    after('logout', async () => {
+      await ptt.logout();
+    });
+    let articles;
+    it('should get correct article list with specified push number from board', async () => {
+      articles = await ptt.getSearchArticlesByPush('ToS', '80');
+      assert(articles.length > 0);
+
+      let pushCheck = false;
+      articles.forEach(article => {
+        console.log(article.push + article.title);
+        let pushNumber = (article.push === '爆') ? '100' : article.push;
+        if (Number(pushNumber) >= 50 ) {
+          pushCheck = true;
+        }
+        assert.equal(pushCheck, true, "push num: " + article.push);
+      });
+    })
+  })
 
   describe('getArticles', () => {
     before('login', async () => {
