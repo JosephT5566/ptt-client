@@ -19,7 +19,7 @@ const newbot = async () => {
 describe('Articles', () => {
   let ptt;
 
-  describe('getSearchArticles', () => {
+  describe.skip('getSearchArticles by push', () => {
     before('login', async () => {
       ptt = await newbot();
     });
@@ -27,20 +27,111 @@ describe('Articles', () => {
       await ptt.logout();
     });
     let articles;
-    it('should get correct article list with specified push number from board', async () => {
-      articles = await ptt.getSearchArticlesByPush('ToS', '80');
+    it('should get correct articles with specified push number from board', async () => {
+      articles = await ptt.getArticlesSearchByPush('C_Chat', '50');
       assert(articles.length > 0);
-
+      
       let pushCheck = false;
       articles.forEach(article => {
-        console.log(article.push + article.title);
+        let articleInfo = article.sn + ' ' + article.push + ' ' + article.title;
+        // console.log(articleInfo);
         let pushNumber = (article.push === '爆') ? '100' : article.push;
         if (Number(pushNumber) >= 50 ) {
           pushCheck = true;
         }
-        assert.equal(pushCheck, true, "push num: " + article.push);
+        assert.equal(pushCheck, true, articleInfo);
       });
-    })
+    });
+
+    it('should get correct article list with offset argument', async () => {
+      let articles2 = await ptt.getArticlesSearchByPush('C_Chat', '50', articles[articles.length-1].sn-1);
+
+      let article1Info = articles[articles.length-1].sn + ' ' + articles[articles.length-1].push + ' ' + articles[articles.length-1].title;
+      let article2Info = articles2[0].sn + ' ' + articles2[0].push + ' ' + articles2[0].title;
+      console.log(article1Info + '\n' + article2Info);
+      assert.equal(articles2[0].sn, articles[articles.length-1].sn-1, article1Info + '\n' + article2Info);
+    });
+  })
+
+  describe.skip('getSearchArticles by author', () => {
+    before('login', async () => {
+      ptt = await newbot();
+    });
+    after('logout', async () => {
+      await ptt.logout();
+    });
+    let articles;
+    it('should get correct articles with specified author name from board', async () => {
+      articles = await ptt.getArticlesSearchByAuthor('Gossiping', 'Gaiaesque');
+      assert(articles.length > 0);
+
+      let authorCheck = false;
+      articles.forEach(article => {
+        let articleInfo = article.sn + ' ' + article.author + ' ' + article.title;
+        // console.log(articleInfo);
+        if (article.author.toLowerCase() === 'Gaiaesque'.toLowerCase() ) {
+          authorCheck = true;
+        }
+        assert.equal(authorCheck, true, articleInfo);
+      });
+    });
+
+    it('should get correct article list with offset argument', async () => {
+      let articles2 = await ptt.getArticlesSearchByAuthor('Gossiping', 'Gaiaesque', articles[articles.length-1].sn-1);
+
+      let article1Info = articles[articles.length-1].sn + ' ' + articles[articles.length-1].author + ' ' + articles[articles.length-1].title;
+      let article2Info = articles2[0].sn + ' ' + articles2[0].author + ' ' + articles2[0].title;
+      console.log(article1Info + '\n' + article2Info);
+      assert.equal(articles2[0].sn, articles[articles.length-1].sn-1, article1Info + '\n' + article2Info);
+    });
+  })
+
+  describe('getSearchArticles by title', () => {
+    before('login', async () => {
+      ptt = await newbot();
+    });
+    after('logout', async () => {
+      await ptt.logout();
+    });
+    let articles;
+    it('should get correct articles contain specified title word from board. English search', async () => {
+      articles = await ptt.getArticlesSearchByTitle('C_Chat', 'jojo');
+      assert(articles.length > 0);
+
+      let titleCheck = false;
+      articles.forEach(article => {
+        let articleInfo = article.sn + ' ' + article.push + ' ' + article.title;
+        console.log(articleInfo);
+        if (article.title.toLowerCase().includes('jojo')) {
+          titleCheck = true;
+        }
+        assert.equal(titleCheck, true, articleInfo);
+      });
+    });
+
+    xit('should get correct articles contain specified title word from board. Chinese search', async () => {
+      articles = await ptt.getArticlesSearchByTitle('C_Chat', '京阿尼');
+      assert(articles.length > 0);
+
+      let titleCheck = false;
+      articles.forEach(article => {
+        let articleInfo = article.sn + ' ' + article.push + ' ' + article.title;
+        console.log(articleInfo);
+        if (article.title.includes('京阿尼')) {
+          titleCheck = true;
+        }
+        // assert.equal(titleCheck, true, articleInfo);
+      });
+    });
+
+    it('should get correct article list with offset argument', async () => {
+      let articles2 = await ptt.getArticlesSearchByTitle('C_Chat', 'jojo', articles[articles.length-1].sn-1);
+
+      let article1Info = articles[articles.length-1].sn + ' ' + articles[articles.length-1].author + ' ' + articles[articles.length-1].title;
+      let article2Info = articles2[0].sn + ' ' + articles2[0].author + ' ' + articles2[0].title;
+      console.log(article1Info + '\n' + article2Info);
+      assert.equal(articles2[0].sn, articles[articles.length-1].sn-1, article1Info + '\n' + article2Info);
+    });
   })
 
   describe('getArticles', () => {
@@ -67,6 +158,10 @@ describe('Articles', () => {
     });
     it('should get correct article list with offset argument', async () => {
       let articles2 = await ptt.getArticles('C_Chat', articles[articles.length-1].sn-1);
+      
+      let article1Info = articles[articles.length-1].sn + ' ' + articles[articles.length-1].push + ' ' + articles[articles.length-1].title;
+      let article2Info = articles2[0].sn + ' ' + articles2[0].push + ' ' + articles2[0].title;
+      console.log(article1Info + '\n' + article2Info);
       assert.equal(articles2[0].sn, articles[articles.length-1].sn-1);
     });
   });
