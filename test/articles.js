@@ -19,7 +19,7 @@ const newbot = async () => {
 describe('Articles', () => {
   let ptt;
 
-  describe.skip('getSearchArticles by push', () => {
+  describe('getSearchArticles by push', () => {
     before('login', async () => {
       ptt = await newbot();
     });
@@ -28,7 +28,9 @@ describe('Articles', () => {
     });
     let articles;
     it('should get correct articles with specified push number from board', async () => {
-      articles = await ptt.getArticlesSearchByPush('C_Chat', '50');
+      // articles = await ptt.getArticlesSearchByPush('C_Chat', '50');
+      ptt.setSearch('push', '50');
+      articles = await ptt.getArticles('C_Chat');
       assert(articles.length > 0);
       
       let pushCheck = false;
@@ -45,6 +47,7 @@ describe('Articles', () => {
 
     it('should get correct article list with offset argument', async () => {
       let articles2 = await ptt.getArticlesSearchByPush('C_Chat', '50', articles[articles.length-1].sn-1);
+      // let articles2 = await ptt.getArticles().Search().ByPush('C_Chat', '50', articles[articles.length-1].sn-1);
 
       let article1Info = articles[articles.length-1].sn + ' ' + articles[articles.length-1].push + ' ' + articles[articles.length-1].title;
       let article2Info = articles2[0].sn + ' ' + articles2[0].push + ' ' + articles2[0].title;
@@ -86,7 +89,7 @@ describe('Articles', () => {
     });
   })
 
-  describe('getSearchArticles by title', () => {
+  describe.skip('getSearchArticles by title', () => {
     before('login', async () => {
       ptt = await newbot();
     });

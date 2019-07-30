@@ -20,6 +20,11 @@ class Bot extends EventEmitter {
     'message',
     'error',
   ];
+  searchConditions = {
+    searchType: '',
+    condition: ''
+  };
+  
   constructor(config) {
     super();
     config = {...defaultConfig, ...config};
@@ -190,6 +195,10 @@ class Bot extends EventEmitter {
 
   async getArticles(boardname, offset=0) {
     await this.enterBoard(boardname);
+    if (this.searchConditions.searchType !== ''){
+      await this.send(`${this.searchConditions.searchType}${this.searchConditions.condition}${key.Enter}`);
+    }
+
     offset |= 0;
     if (offset > 0) {
       offset = Math.max(offset-9, 1);
@@ -513,6 +522,29 @@ class Bot extends EventEmitter {
     await this.send(`M${key.Enter}R${key.Enter}${key.Home}${key.End}`);
     return true;
   }
+}
+
+Bot.prototype.setSearch = function (searchType, condition) {
+  switch (searchType) {
+    case 'push':
+      this.searchConditions.searchType = 'Z';
+      break;
+    case 'author':
+      this.searchConditions.searchType = 'a';
+      break;
+    case 'title':
+      this.searchConditions.searchType = '/';
+      break;
+    default:
+      throw `Invalid condition: ${searchType}`;
+      break;
+  }
+  this.searchConditions.condition = condition;
+}
+
+Bot.prototype.resetSearch = function() {
+  this.searchConditions.searchType = '';
+  this.searchConditions.condition = '';
 }
 
 export default Bot;
