@@ -20,9 +20,9 @@ class Bot extends EventEmitter {
     'message',
     'error',
   ];
-  searchConditions = {
-    searchType: '',
-    condition: ''
+  searchCondition = {
+    searchType: "",
+    condition: ""
   };
   
   constructor(config) {
@@ -193,10 +193,17 @@ class Bot extends EventEmitter {
     return authorArea === "作者";
   }
 
+  searchConditionIsSet() {
+    if (this.searchCondition.searchType) {
+      return true;
+    }
+    return false;
+  }
+
   async getArticles(boardname, offset=0) {
     await this.enterBoard(boardname);
-    if (this.searchConditions.searchType !== ''){
-      await this.send(`${this.searchConditions.searchType}${this.searchConditions.condition}${key.Enter}`);
+    if (this.searchConditionIsSet()){
+      await this.send(`${this.searchCondition.searchType}${this.searchCondition.condition}${key.Enter}`);
     }
 
     offset |= 0;
@@ -261,123 +268,6 @@ class Bot extends EventEmitter {
 
     await this.enterIndex();
     return article;
-  }
-
-  async getArticlesSearchByPush(boardname, pushNum, offset = 0) {
-    await this.enterBoard(boardname);
-    await this.send(`Z${pushNum}${key.Enter}`);
-    offset |= 0;
-    if (offset > 0) {
-      offset = Math.max(offset-9, 1);
-      await this.send(`${key.End}${key.End}${offset}${key.Enter}`);
-    }
-    const { getLine } = this;
-    let articles = [];
-    for(let i=3; i<=22; i++) {
-      const line = getLine(i).str;
-      const article = {
-        sn:     substrWidth('dbcs', line, 1,   7).trim() | 0,
-        push:   substrWidth('dbcs', line, 9,   2).trim(),
-        date:   substrWidth('dbcs', line, 11,  5).trim(),
-        author: substrWidth('dbcs', line, 17, 12).trim(),
-        status: substrWidth('dbcs', line, 30,  2).trim(),
-        title:  substrWidth('dbcs', line, 32    ).trim(),
-        fixed:  substrWidth('dbcs', line, 1,   7).trim().includes('★'),
-      };
-      articles.push(article);
-    }
-    // fix sn
-    if (articles.length >= 2 && articles[0].sn === 0) {
-      for(let i=1; i<articles.length; i++) {
-        if (articles[i].sn !== 0) {
-          articles[0].sn = articles[i].sn - i;
-          break;
-        }
-      }
-    }
-    for(let i=1; i<articles.length; i++) {
-      articles[i].sn = articles[i-1].sn+1;
-    }
-    await this.enterIndex();
-    return articles.reverse();
-  }
-
-  async getArticlesSearchByAuthor(boardname, authorName, offset = 0) {
-    await this.enterBoard(boardname);
-    await this.send(`a${authorName}${key.Enter}`);
-    offset |= 0;
-    if (offset > 0) {
-      offset = Math.max(offset-9, 1);
-      await this.send(`${key.End}${key.End}${offset}${key.Enter}`);
-    }
-    const { getLine } = this;
-    let articles = [];
-    for(let i=3; i<=22; i++) {
-      const line = getLine(i).str;
-      const article = {
-        sn:     substrWidth('dbcs', line, 1,   7).trim() | 0,
-        push:   substrWidth('dbcs', line, 9,   2).trim(),
-        date:   substrWidth('dbcs', line, 11,  5).trim(),
-        author: substrWidth('dbcs', line, 17, 12).trim(),
-        status: substrWidth('dbcs', line, 30,  2).trim(),
-        title:  substrWidth('dbcs', line, 32    ).trim(),
-        fixed:  substrWidth('dbcs', line, 1,   7).trim().includes('★'),
-      };
-      articles.push(article);
-    }
-    // fix sn
-    if (articles.length >= 2 && articles[0].sn === 0) {
-      for(let i=1; i<articles.length; i++) {
-        if (articles[i].sn !== 0) {
-          articles[0].sn = articles[i].sn - i;
-          break;
-        }
-      }
-    }
-    for(let i=1; i<articles.length; i++) {
-      articles[i].sn = articles[i-1].sn+1;
-    }
-    await this.enterIndex();
-    return articles.reverse();
-  }
-
-  async getArticlesSearchByTitle(boardname, titleWord, offset = 0) {
-    await this.enterBoard(boardname);
-    await this.send(`/${titleWord}${key.Enter}`);
-    offset |= 0;
-    if (offset > 0) {
-      offset = Math.max(offset-9, 1);
-      await this.send(`${key.End}${key.End}${offset}${key.Enter}`);
-    }
-    const { getLine } = this;
-    let articles = [];
-    for(let i=3; i<=22; i++) {
-      const line = getLine(i).str;
-      const article = {
-        sn:     substrWidth('dbcs', line, 1,   7).trim() | 0,
-        push:   substrWidth('dbcs', line, 9,   2).trim(),
-        date:   substrWidth('dbcs', line, 11,  5).trim(),
-        author: substrWidth('dbcs', line, 17, 12).trim(),
-        status: substrWidth('dbcs', line, 30,  2).trim(),
-        title:  substrWidth('dbcs', line, 32    ).trim(),
-        fixed:  substrWidth('dbcs', line, 1,   7).trim().includes('★'),
-      };
-      articles.push(article);
-    }
-    // fix sn
-    if (articles.length >= 2 && articles[0].sn === 0) {
-      for(let i=1; i<articles.length; i++) {
-        if (articles[i].sn !== 0) {
-          articles[0].sn = articles[i].sn - i;
-          break;
-        }
-      }
-    }
-    for(let i=1; i<articles.length; i++) {
-      articles[i].sn = articles[i-1].sn+1;
-    }
-    await this.enterIndex();
-    return articles.reverse();
   }
 
   async getFavorite(offsets=[]) {
@@ -524,27 +414,26 @@ class Bot extends EventEmitter {
   }
 }
 
-Bot.prototype.setSearch = function (searchType, condition) {
+Bot.prototype.setSearchCondition = function (searchType, condition) {
   switch (searchType) {
     case 'push':
-      this.searchConditions.searchType = 'Z';
+      this.searchCondition.searchType = 'Z';
       break;
     case 'author':
-      this.searchConditions.searchType = 'a';
+      this.searchCondition.searchType = 'a';
       break;
     case 'title':
-      this.searchConditions.searchType = '/';
+      this.searchCondition.searchType = '/';
       break;
     default:
       throw `Invalid condition: ${searchType}`;
-      break;
   }
-  this.searchConditions.condition = condition;
+  this.searchCondition.condition = condition;
 }
 
-Bot.prototype.resetSearch = function() {
-  this.searchConditions.searchType = '';
-  this.searchConditions.condition = '';
+Bot.prototype.resetSearchCondition = function() {
+  this.searchCondition.searchType = "";
+  this.searchCondition.condition = "";
 }
 
 export default Bot;

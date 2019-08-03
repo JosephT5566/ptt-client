@@ -25,11 +25,11 @@ describe('Articles', () => {
     });
     after('logout', async () => {
       await ptt.logout();
+      ptt.resetSearchCondition();
     });
     let articles;
     it('should get correct articles with specified push number from board', async () => {
-      // articles = await ptt.getArticlesSearchByPush('C_Chat', '50');
-      ptt.setSearch('push', '50');
+      ptt.setSearchCondition('push', '50');
       articles = await ptt.getArticles('C_Chat');
       assert(articles.length > 0);
       
@@ -46,8 +46,7 @@ describe('Articles', () => {
     });
 
     it('should get correct article list with offset argument', async () => {
-      let articles2 = await ptt.getArticlesSearchByPush('C_Chat', '50', articles[articles.length-1].sn-1);
-      // let articles2 = await ptt.getArticles().Search().ByPush('C_Chat', '50', articles[articles.length-1].sn-1);
+      let articles2 = await ptt.getArticles('C_Chat', articles[articles.length-1].sn-1);
 
       let article1Info = articles[articles.length-1].sn + ' ' + articles[articles.length-1].push + ' ' + articles[articles.length-1].title;
       let article2Info = articles2[0].sn + ' ' + articles2[0].push + ' ' + articles2[0].title;
@@ -56,16 +55,18 @@ describe('Articles', () => {
     });
   })
 
-  describe.skip('getSearchArticles by author', () => {
+  describe('getSearchArticles by author', () => {
     before('login', async () => {
       ptt = await newbot();
     });
     after('logout', async () => {
       await ptt.logout();
+      ptt.resetSearchCondition();
     });
     let articles;
     it('should get correct articles with specified author name from board', async () => {
-      articles = await ptt.getArticlesSearchByAuthor('Gossiping', 'Gaiaesque');
+      ptt.setSearchCondition('author', 'Gaiaesque');
+      articles = await ptt.getArticles('Gossiping');
       assert(articles.length > 0);
 
       let authorCheck = false;
@@ -80,8 +81,8 @@ describe('Articles', () => {
     });
 
     it('should get correct article list with offset argument', async () => {
-      let articles2 = await ptt.getArticlesSearchByAuthor('Gossiping', 'Gaiaesque', articles[articles.length-1].sn-1);
-
+      let articles2 = await ptt.getArticles('Gossiping', articles[articles.length-1].sn-1);
+      
       let article1Info = articles[articles.length-1].sn + ' ' + articles[articles.length-1].author + ' ' + articles[articles.length-1].title;
       let article2Info = articles2[0].sn + ' ' + articles2[0].author + ' ' + articles2[0].title;
       console.log(article1Info + '\n' + article2Info);
@@ -89,22 +90,24 @@ describe('Articles', () => {
     });
   })
 
-  describe.skip('getSearchArticles by title', () => {
+  describe('getSearchArticles by title', () => {
     before('login', async () => {
       ptt = await newbot();
     });
     after('logout', async () => {
       await ptt.logout();
+      ptt.resetSearchCondition();
     });
     let articles;
     it('should get correct articles contain specified title word from board. English search', async () => {
-      articles = await ptt.getArticlesSearchByTitle('C_Chat', 'jojo');
+      ptt.setSearchCondition('title', 'jojo');
+      articles = await ptt.getArticles('C_Chat');
       assert(articles.length > 0);
 
       let titleCheck = false;
       articles.forEach(article => {
         let articleInfo = article.sn + ' ' + article.push + ' ' + article.title;
-        console.log(articleInfo);
+        // console.log(articleInfo);
         if (article.title.toLowerCase().includes('jojo')) {
           titleCheck = true;
         }
@@ -112,8 +115,18 @@ describe('Articles', () => {
       });
     });
 
+    it('should get correct article list with offset argument. English search', async () => {
+      let articles2 = await ptt.getArticles('C_Chat', articles[articles.length-1].sn-1);
+
+      let article1Info = articles[articles.length-1].sn + ' ' + articles[articles.length-1].author + ' ' + articles[articles.length-1].title;
+      let article2Info = articles2[0].sn + ' ' + articles2[0].author + ' ' + articles2[0].title;
+      console.log(article1Info + '\n' + article2Info);
+      assert.equal(articles2[0].sn, articles[articles.length-1].sn-1, article1Info + '\n' + article2Info);
+    });
+
     xit('should get correct articles contain specified title word from board. Chinese search', async () => {
-      articles = await ptt.getArticlesSearchByTitle('C_Chat', '京阿尼');
+      ptt.setSearchCondition('title', '京阿尼');
+      articles = await ptt.getArticles('C_Chat');
       assert(articles.length > 0);
 
       let titleCheck = false;
@@ -126,15 +139,16 @@ describe('Articles', () => {
         // assert.equal(titleCheck, true, articleInfo);
       });
     });
-
-    it('should get correct article list with offset argument', async () => {
-      let articles2 = await ptt.getArticlesSearchByTitle('C_Chat', 'jojo', articles[articles.length-1].sn-1);
+      
+    xit('should get correct article list with offset argument. Chinese search', async () => {
+      let articles2 = await ptt.getArticles('C_Chat', articles[articles.length-1].sn-1);
 
       let article1Info = articles[articles.length-1].sn + ' ' + articles[articles.length-1].author + ' ' + articles[articles.length-1].title;
       let article2Info = articles2[0].sn + ' ' + articles2[0].author + ' ' + articles2[0].title;
       console.log(article1Info + '\n' + article2Info);
       assert.equal(articles2[0].sn, articles[articles.length-1].sn-1, article1Info + '\n' + article2Info);
     });
+
   })
 
   describe('getArticles', () => {
