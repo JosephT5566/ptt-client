@@ -253,7 +253,6 @@ class Bot extends EventEmitter {
       this.searchCondition.conditions.forEach(condition => {
         searchString = searchString.concat(`${condition.type}${condition.condition}${key.Enter}`);
       });
-      console.log(searchString);
       await this.send(`${searchString}`);
     }
 
